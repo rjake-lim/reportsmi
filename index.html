@@ -11,7 +11,7 @@
             background-color: #F0F4F8;
         }
 
-        /* Header with logo */
+        /* Header */
         .header {
             background-color: #FFFFFF;
             padding: 10px 20px;
@@ -20,18 +20,18 @@
             border-bottom: 2px solid #ddd;
         }
         .header img {
-            height: 50px;
+            height: 60px;
             margin-right: 15px;
         }
         .header h1 {
-            font-size: 1.5em;
+            font-size: 1.7em;
             color: #333;
         }
 
-        /* Sidebar + Main */
+        /* Layout */
         .container {
             display: flex;
-            height: calc(100vh - 72px); /* adjust for header height */
+            height: calc(100vh - 80px); /* adjust for header height */
         }
 
         .sidebar {
@@ -40,7 +40,6 @@
             color: white;
             padding: 20px;
         }
-
         .sidebar p {
             margin: 15px 0;
             cursor: pointer;
@@ -76,11 +75,13 @@
 
     <!-- Header with logo -->
     <div class="header">
+        <!-- Example logo source: choose a valid image URL or host your own -->
         <img src="https://seeklogo.com/images/M/mang-inasal-logo-18746169B7-seeklogo.com.png" alt="Mang Inasal Logo">
         <h1>Dashboard</h1>
     </div>
 
     <div class="container">
+
         <!-- Sidebar -->
         <div class="sidebar">
             <h2>Menu</h2>
@@ -98,6 +99,7 @@
 
             <div class="alert">Server load is high!</div>
         </div>
+
     </div>
 
 </body>
