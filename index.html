@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Excel-like Editable Table</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    td {
+        min-width: 150px;
+        cursor: text;
+    }
+    td:focus {
+        outline: 2px solid #0d6efd;
+    }
+    #outputText {
+        min-height: 300px;
+        white-space: pre-wrap;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+</style>
+</head>
+
+<body class="p-4">
+<div class="container-fluid">
+<div class="row">
+
+<!-- LEFT -->
+<div class="col-md-6">
+    <h5>Editable Table (Excel-like Navigation)</h5>
+    <table class="table table-bordered" id="editableTable">
+        <tbody>
+            <tr>
+                <td contenteditable="true"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- RIGHT -->
+<div class="col-md-6">
+    <h5>Converted Normal Text (Editable)</h5>
+    <div id="outputText" contenteditable="true"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+const table = document.getElementById("editableTable");
+const tbody = table.querySelector("tbody");
+const output = document.getElementById("outputText");
+
+/* Build table from Excel clipboard */
+function buildTableFromClipboard(text) {
+    const rows = text.replace(/\r/g, "").split("\n").map(r => r.split("\t"));
+    tbody.innerHTML = "";
+
+    rows.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach(cellText => {
+            const td = document.createElement("td");
+            td.contentEditable = "true";
+            td.innerText = cellText;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+
+    ensureEmptyRow();
+    updateText();
+}
+
+/* Convert table to plain text */
+function updateText() {
+    let text = "";
+
+    tbody.querySelectorAll("tr").forEach(row => {
+        let rowText = "";
+
+        row.querySelectorAll("td").forEach((cell, index) => {
+            let cellText = cell.innerText.replace(/\t/g, "");
+            if (index > 0) rowText += " ";
+            rowText += cellText;
+        });
+
+        text += rowText + "\n";
+    });
+
+    output.textContent = text;
+}
+
+/* Keep one empty row */
+function ensureEmptyRow() {
+    const rows = tbody.querySelectorAll("tr");
+    const lastRow = rows[rows.length - 1];
+    const hasContent = [...lastRow.cells].some(td => td.innerText.trim() !== "");
+
+    if (hasContent) {
+        const tr = document.createElement("tr");
+        for (let i = 0; i < lastRow.cells.length; i++) {
+            const td = document.createElement("td");
+            td.contentEditable = "true";
+            tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+    }
+}
+
+/* 🔥 Excel-like arrow key navigation */
+table.addEventListener("keydown", e => {
+    const cell = e.target.closest("td");
+    if (!cell) return;
+
+    const row = cell.parentElement;
+    const rowIndex = [...tbody.rows].indexOf(row);
+    const colIndex = [...row.cells].indexOf(cell);
+
+    let targetCell = null;
+
+    switch (e.key) {
+        case "ArrowRight":
+            e.preventDefault();
+            if (!row.cells[colIndex + 1]) {
+                tbody.querySelectorAll("tr").forEach(r => {
+                    const td = document.createElement("td");
+                    td.contentEditable = "true";
+                    r.appendChild(td);
+                });
+            }
+            targetCell = row.cells[colIndex + 1];
+            break;
+
+        case "ArrowLeft":
+            e.preventDefault();
+            targetCell = row.cells[colIndex - 1];
+            break;
+
+        case "ArrowDown":
+            e.preventDefault();
+            if (!tbody.rows[rowIndex + 1]) {
+                const tr = document.createElement("tr");
+                for (let i = 0; i < row.cells.length; i++) {
+                    const td = document.createElement("td");
+                    td.contentEditable = "true";
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+            targetCell = tbody.rows[rowIndex + 1].cells[colIndex];
+            break;
+
+        case "ArrowUp":
+            e.preventDefault();
+            if (tbody.rows[rowIndex - 1]) {
+                targetCell = tbody.rows[rowIndex - 1].cells[colIndex];
+            }
+            break;
+    }
+
+    if (targetCell) {
+        targetCell.focus();
+    }
+});
+
+/* Excel paste support */
+table.addEventListener("paste", e => {
+    const text = e.clipboardData.getData("text");
+    if (text.includes("\t") || text.includes("\n")) {
+        e.preventDefault();
+        buildTableFromClipboard(text);
+    }
+});
+
+/* Sync text */
+table.addEventListener("input", () => {
+    ensureEmptyRow();
+    updateText();
+});
+</script>
+
+</body>
+</html>
