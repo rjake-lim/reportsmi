@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MI Reports System</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-light bg-white shadow-sm px-4">
+    <button id="menuToggle" class="btn btn-success">☰</button>
+    <span class="fs-4 ms-3">MI Reports System</span>
+</nav>
+
+<!-- SIDEBAR -->
+<div id="sidebarMenu" class="sidebar">
+    <div id="sidebarClose" class="sidebar-close">✕</div>
+    <h5 class="px-3">Menu</h5>
+    <a href="#" onclick="showDashboard()">Dashboard</a>
+    <a href="#" onclick="showAnalytics()">Analytics</a>
+    <a href="#" onclick="showReports()">Reports</a>
+    <a href="#" onclick="showSettings()">Settings</a>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" class="overlay"></div>
+
+<!-- MAIN CONTENT -->
+<div class="content-wrapper" id="contentWrapper">
+<div class="container-fluid">
+
+<!-- DASHBOARD PAGE -->
+<div id="dashboardPage">
+    <div class="row my-4">
+        <div class="col-md-4 mb-3">
+            <div class="card card-custom p-3 text-center">
+                <h5>Users</h5>
+                <p class="fs-4">1,234</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card card-custom p-3 text-center">
+                <h5>Revenue</h5>
+                <p class="fs-4">$12,345</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card card-custom p-3 text-center">
+                <h5>Sales</h5>
+                <p class="fs-4">567</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-custom my-3">Server load is high!</div>
+
+    <h4 class="mt-4">Excel-like Editable Table</h4>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <table class="table table-bordered" id="editableTable">
+                <tbody>
+                    <tr><td contenteditable="true"></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div id="outputText" contenteditable="true"></div>
+        </div>
+    </div>
+    <button class="btn btn-success mb-3" onclick="saveReport()" id="saveBtn">Save Report</button>
+    <button class="btn btn-warning mb-3" onclick="updateReport()" id="updateBtn" style="display:none;">Update Report</button>
+</div>
+
+<!-- REPORTS PAGE -->
+<div id="reportsPage" style="display:none;">
+    <h4>Saved Reports</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="reportsTable"></tbody>
+    </table>
+</div>
+
+<!-- ANALYTICS PAGE -->
+<div id="analyticsPage" style="display:none;">
+    <h4>Analytics</h4>
+    <p>Analytics content goes here...</p>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div id="settingsPage" style="display:none;">
+    <h4>Settings</h4>
+    <p>Settings content goes here...</p>
+</div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
