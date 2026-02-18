@@ -128,9 +128,7 @@ td:focus {
 
 <!-- NAVBAR -->
 <nav class="navbar navbar-light bg-white shadow-sm px-4">
-<button id="menuToggle" class="btn btn-success">
-☰
-</button>
+<button id="menuToggle" class="btn btn-success">☰</button>
 <span class="fs-4 ms-3">MI Reports System</span>
 </nav>
 
@@ -141,7 +139,6 @@ td:focus {
 <a href="#" onclick="showDashboard()">Dashboard</a>
 <a href="#" onclick="showAnalytics()">Analytics</a>
 <a href="#" onclick="showReports()">Reports</a>
-<!-- ADD THIS LINK IN YOUR SIDEBAR -->
 <a href="#" onclick="showReportsFormat()">Reports Format</a>
 <a href="#" onclick="showSettings()">Settings</a>
 </div>
@@ -208,9 +205,9 @@ td:focus {
 </table>
 </div>
 
-<!-- ADD THIS DIV AFTER YOUR DASHBOARD/REPORTS/ANALYTICS/SETTINGS PAGES -->
+<!-- REPORTS FORMAT PAGE -->
 <div id="reportsFormatPage" style="display:none;">
-
+<!-- Example Report -->
 <!-- REPORT 1 -->
 <div class="card">
 <div class="title">Report 1</div>
@@ -342,7 +339,6 @@ td:focus {
 <tr><td contenteditable>Raynan</td></tr>
 </table>
 </div>
-</div>
 
 <!-- ANALYTICS PAGE -->
 <div id="analyticsPage" style="display:none;">
@@ -378,6 +374,15 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let currentReportID = null;
 
+const dashboardPage = document.getElementById("dashboardPage");
+const reportsPage = document.getElementById("reportsPage");
+const analyticsPage = document.getElementById("analyticsPage");
+const settingsPage = document.getElementById("settingsPage");
+const reportsFormatPage = document.getElementById("reportsFormatPage");
+
+const saveBtn = document.getElementById("saveBtn");
+const updateBtn = document.getElementById("updateBtn");
+
 // Save Report
 window.saveReport = async () => {
     const text = outputText.innerText;
@@ -391,23 +396,22 @@ window.updateReport = async () => {
     alert("Report Updated");
 }
 
-// Show Dashboard
+// Show Pages
 window.showDashboard = () => {
     dashboardPage.style.display="block";
     reportsPage.style.display="none";
     analyticsPage.style.display="none";
     settingsPage.style.display="none";
+    reportsFormatPage.style.display="none";
     saveBtn.style.display="inline-block";
     updateBtn.style.display="none";
 }
-
-// Show Reports
 window.showReports = async () => {
     dashboardPage.style.display="none";
     reportsPage.style.display="block";
     analyticsPage.style.display="none";
     settingsPage.style.display="none";
-
+    reportsFormatPage.style.display="none";
     const snapshot = await getDocs(collection(db,"reports"));
     reportsTable.innerHTML = "";
     snapshot.forEach(docSnap=>{
@@ -418,12 +422,34 @@ window.showReports = async () => {
             <button class="btn btn-info btn-sm" onclick="openReport('${docSnap.id}')">Open</button>
             <button class="btn btn-danger btn-sm" onclick="deleteReport('${docSnap.id}')">Delete</button>
         </td>
-        </tr>
-        `;
+        </tr>`;
     });
 }
+window.showAnalytics = () => {
+    dashboardPage.style.display="none";
+    reportsPage.style.display="none";
+    analyticsPage.style.display="block";
+    settingsPage.style.display="none";
+    reportsFormatPage.style.display="none";
+}
+window.showSettings = () => {
+    dashboardPage.style.display="none";
+    reportsPage.style.display="none";
+    analyticsPage.style.display="none";
+    settingsPage.style.display="block";
+    reportsFormatPage.style.display="none";
+}
+window.showReportsFormat = () => {
+    dashboardPage.style.display="none";
+    reportsPage.style.display="none";
+    analyticsPage.style.display="none";
+    settingsPage.style.display="none";
+    reportsFormatPage.style.display="block";
+    saveBtn.style.display="none";
+    updateBtn.style.display="none";
+}
 
-// Open Report
+// Open/Delete
 window.openReport = async (id)=>{
     const snap = await getDoc(doc(db,"reports",id));
     outputText.innerText = snap.data().content;
@@ -432,8 +458,6 @@ window.openReport = async (id)=>{
     saveBtn.style.display="none";
     updateBtn.style.display="inline-block";
 }
-
-// Delete Report
 window.deleteReport = async (id)=>{
     if(confirm("Delete this report?")){
         await deleteDoc(doc(db,"reports",id));
@@ -441,30 +465,11 @@ window.deleteReport = async (id)=>{
     }
 }
 
-// Analytics
-window.showAnalytics = () => {
-    dashboardPage.style.display="none";
-    reportsPage.style.display="none";
-    analyticsPage.style.display="block";
-    settingsPage.style.display="none";
-}
-
-// Settings
-window.showSettings = () => {
-    dashboardPage.style.display="none";
-    reportsPage.style.display="none";
-    analyticsPage.style.display="none";
-    settingsPage.style.display="block";
-}
-</script>
-
-<!-- EXCEL TABLE -->
-<script>
+// EXCEL-LIKE TABLE
 const table = document.getElementById("editableTable");
 const tbody = table.querySelector("tbody");
 const output = document.getElementById("outputText");
 
-// Convert table to plain text
 function updateText() {
     let text = "";
     tbody.querySelectorAll("tr").forEach(row => {
@@ -478,8 +483,6 @@ function updateText() {
     });
     output.textContent = text;
 }
-
-// Keep one empty row
 function ensureEmptyRow() {
     const rows = tbody.querySelectorAll("tr");
     const lastRow = rows[rows.length-1];
@@ -494,8 +497,6 @@ function ensureEmptyRow() {
         tbody.appendChild(tr);
     }
 }
-
-// Arrow key navigation
 table.addEventListener("keydown", e => {
     const cell = e.target.closest("td");
     if(!cell) return;
@@ -533,8 +534,6 @@ table.addEventListener("keydown", e => {
     }
     if(targetCell) targetCell.focus();
 });
-
-// Paste support
 table.addEventListener("paste", e=>{
     const text = e.clipboardData.getData("text");
     if(text.includes("\t")||text.includes("\n")){
@@ -555,16 +554,12 @@ table.addEventListener("paste", e=>{
     ensureEmptyRow();
     updateText();
 });
-
-// Input update
 table.addEventListener("input", ()=>{
     ensureEmptyRow();
     updateText();
 });
-</script>
 
-<!-- SIDEBAR CONTROL -->
-<script>
+// SIDEBAR CONTROL
 const sidebar=document.getElementById("sidebarMenu");
 const overlay=document.getElementById("overlay");
 const toggle=document.getElementById("menuToggle");
@@ -576,27 +571,14 @@ toggle.onclick=()=>{
     overlay.classList.add("show");
     contentWrapper.classList.add("shift");
 };
-
 closeBtn.onclick=closeSidebar;
 overlay.onclick=closeSidebar;
-
 function closeSidebar(){
     sidebar.classList.remove("show");
     overlay.classList.remove("show");
     contentWrapper.classList.remove("shift");
 }
 </script>
-    
-<!-- ADD THIS SCRIPT TO CONTROL SHOW/HIDE -->
-<script>
-function showReportsFormat(){
-    dashboardPage.style.display = "none";
-    reportsPage.style.display = "none";
-    analyticsPage.style.display = "none";
-    settingsPage.style.display = "none";
-    reportsFormatPage.style.display = "block";
-}
-</script>
-    
+
 </body>
 </html>
