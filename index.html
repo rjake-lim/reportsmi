@@ -236,12 +236,26 @@ margin-bottom:10px;
 </thead>
 <tbody id="reportsTable"></tbody>
 </table>
+
+<!-- SAVED REPORTS FORMAT -->
+<h4 class="mt-5">Saved Reports Format</h4>
+<table class="table table-bordered">
+<thead>
+<tr>
+<th>Title</th>
+<th>Date Saved</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="reportsFormatTable"></tbody>
+</table>
 </div>
 
 <!-- REPORTS FORMAT PAGE -->
 <div id="reportsFormatPage" style="display:none;">
 <button class="btn btn-success mb-3" onclick="saveReportsFormat()">Save Reports Format</button>
 
+<!-- Example Report -->
 <!-- REPORT 1 -->
 <div class="card">
 <div class="title">Report 1</div>
@@ -407,6 +421,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let currentReportID = null;
 
+// ELEMENTS
 const dashboardPage = document.getElementById("dashboardPage");
 const reportsPage = document.getElementById("reportsPage");
 const analyticsPage = document.getElementById("analyticsPage");
@@ -415,6 +430,9 @@ const reportsFormatPage = document.getElementById("reportsFormatPage");
 
 const saveBtn = document.getElementById("saveBtn");
 const updateBtn = document.getElementById("updateBtn");
+const outputText = document.getElementById("outputText");
+const reportsTable = document.getElementById("reportsTable");
+const reportsFormatTable = document.getElementById("reportsFormatTable");
 
 // Save Report
 window.saveReport = async () => {
@@ -431,18 +449,13 @@ window.updateReport = async () => {
 
 // Save Reports Format
 window.saveReportsFormat = async () => {
-    const reportsCards = reportsFormatPage.querySelectorAll(".card");
-    const reportsData = [];
-    reportsCards.forEach(card => {
-        const tableHTML = card.querySelector("table").outerHTML;
-        const title = card.querySelector(".title").innerText;
-        reportsData.push({ title, tableHTML });
+    const cards = [...reportsFormatPage.querySelectorAll(".card")];
+    const content = cards.map(card=>{
+        const table = card.querySelector("table");
+        return {title:card.querySelector(".title").innerText, tableHTML: table.outerHTML};
     });
-    await addDoc(collection(db, "reports_format"), {
-        content: reportsData,
-        date: new Date().toLocaleString()
-    });
-    alert("Reports Format Saved!");
+    await addDoc(collection(db,"reports_format"),{content, date:new Date().toLocaleString()});
+    alert("Reports Format Saved");
 }
 
 // Show Pages
@@ -461,6 +474,8 @@ window.showReports = async () => {
     analyticsPage.style.display="none";
     settingsPage.style.display="none";
     reportsFormatPage.style.display="none";
+
+    // Load Saved Reports
     const snapshot = await getDocs(collection(db,"reports"));
     reportsTable.innerHTML = "";
     snapshot.forEach(docSnap=>{
@@ -473,7 +488,11 @@ window.showReports = async () => {
         </td>
         </tr>`;
     });
+
+    // Load Saved Reports Format
+    loadReportsFormat();
 }
+
 window.showAnalytics = () => {
     dashboardPage.style.display="none";
     reportsPage.style.display="none";
@@ -498,7 +517,7 @@ window.showReportsFormat = () => {
     updateBtn.style.display="none";
 }
 
-// Open/Delete
+// Open/Delete Reports
 window.openReport = async (id)=>{
     const snap = await getDoc(doc(db,"reports",id));
     outputText.innerText = snap.data().content;
@@ -514,10 +533,71 @@ window.deleteReport = async (id)=>{
     }
 }
 
-// EXCEL-LIKE TABLE
+// Saved Reports Format
+async function loadReportsFormat() {
+    const snapshot = await getDocs(collection(db,"reports_format"));
+    reportsFormatTable.innerHTML = "";
+    snapshot.forEach(docSnap => {
+        const date = docSnap.data().date;
+        const content = docSnap.data().content;
+        const id = docSnap.id;
+        const title = content.length>0 ? content[0].title : "Reports Format";
+        reportsFormatTable.innerHTML += `
+        <tr>
+            <td>${title}</td>
+            <td>${date}</td>
+            <td>
+                <button class="btn btn-info btn-sm" onclick="openReportsFormat('${id}')">Open</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteReportsFormat('${id}')">Delete</button>
+            </td>
+        </tr>`;
+    });
+}
+
+window.openReportsFormat = async (id) => {
+    const snap = await getDoc(doc(db,"reports_format",id));
+    const content = snap.data().content;
+    if(!content) return;
+    const cards = reportsFormatPage.querySelectorAll(".card");
+    cards.forEach((card,index)=>{
+        if(content[index]){
+            card.querySelector("table").outerHTML = content[index].tableHTML;
+            card.querySelector(".title").innerText = content[index].title;
+        }
+    });
+    showReportsFormat();
+}
+
+window.deleteReportsFormat = async (id) => {
+    if(confirm("Delete this saved reports format?")) {
+        await deleteDoc(doc(db,"reports_format",id));
+        loadReportsFormat();
+    }
+}
+
+// SIDEBAR CONTROL
+const sidebar=document.getElementById("sidebarMenu");
+const overlay=document.getElementById("overlay");
+const toggle=document.getElementById("menuToggle");
+const closeBtn=document.getElementById("sidebarClose");
+const contentWrapper=document.getElementById("contentWrapper");
+
+toggle.onclick=()=>{
+    sidebar.classList.add("show");
+    overlay.classList.add("show");
+    contentWrapper.classList.add("shift");
+};
+closeBtn.onclick=closeSidebar;
+overlay.onclick=closeSidebar;
+function closeSidebar(){
+    sidebar.classList.remove("show");
+    overlay.classList.remove("show");
+    contentWrapper.classList.remove("shift");
+}
+
+// EXCEL-LIKE TABLE LOGIC (keep as before)
 const table = document.getElementById("editableTable");
 const tbody = table.querySelector("tbody");
-const output = document.getElementById("outputText");
 
 function updateText() {
     let text = "";
@@ -530,7 +610,7 @@ function updateText() {
         });
         text += rowText + "\n";
     });
-    output.textContent = text;
+    outputText.textContent = text;
 }
 function ensureEmptyRow() {
     const rows = tbody.querySelectorAll("tr");
@@ -607,26 +687,6 @@ table.addEventListener("input", ()=>{
     ensureEmptyRow();
     updateText();
 });
-
-// SIDEBAR CONTROL
-const sidebar=document.getElementById("sidebarMenu");
-const overlay=document.getElementById("overlay");
-const toggle=document.getElementById("menuToggle");
-const closeBtn=document.getElementById("sidebarClose");
-const contentWrapper=document.getElementById("contentWrapper");
-
-toggle.onclick=()=>{
-    sidebar.classList.add("show");
-    overlay.classList.add("show");
-    contentWrapper.classList.add("shift");
-};
-closeBtn.onclick=closeSidebar;
-overlay.onclick=closeSidebar;
-function closeSidebar(){
-    sidebar.classList.remove("show");
-    overlay.classList.remove("show");
-    contentWrapper.classList.remove("shift");
-}
 </script>
 
 </body>
