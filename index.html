@@ -19,22 +19,12 @@
 
 <!-- SIDEBAR -->
 <div id="sidebarMenu" class="sidebar">
-
     <div id="sidebarClose" class="sidebar-close">✕</div>
-
     <h5 class="px-3">Menu</h5>
-
     <a href="#" onclick="showDashboard()">Dashboard</a>
-
     <a href="#" onclick="showAnalytics()">Analytics</a>
-
     <a href="#" onclick="showReports()">Reports</a>
-
-    <!-- ✅ NEW BUTTON -->
-    <a href="#" onclick="showReportsFormat()">Reports Format</a>
-
     <a href="#" onclick="showSettings()">Settings</a>
-
 </div>
 
 <!-- OVERLAY -->
@@ -44,257 +34,78 @@
 <div class="content-wrapper" id="contentWrapper">
 <div class="container-fluid">
 
-
-
-
 <!-- DASHBOARD PAGE -->
 <div id="dashboardPage">
-
     <div class="row my-4">
-
         <div class="col-md-4 mb-3">
             <div class="card card-custom p-3 text-center">
                 <h5>Users</h5>
                 <p class="fs-4">1,234</p>
             </div>
         </div>
-
         <div class="col-md-4 mb-3">
             <div class="card card-custom p-3 text-center">
                 <h5>Revenue</h5>
                 <p class="fs-4">$12,345</p>
             </div>
         </div>
-
         <div class="col-md-4 mb-3">
             <div class="card card-custom p-3 text-center">
                 <h5>Sales</h5>
                 <p class="fs-4">567</p>
             </div>
         </div>
-
     </div>
 
-    <div class="alert alert-custom my-3">
-        Server load is high!
-    </div>
-
-
+    <div class="alert alert-custom my-3">Server load is high!</div>
 
     <h4 class="mt-4">Excel-like Editable Table</h4>
-
     <div class="row">
-
         <div class="col-md-6 mb-3">
-
             <table class="table table-bordered" id="editableTable">
                 <tbody>
-                    <tr>
-                        <td contenteditable="true"></td>
-                    </tr>
+                    <tr><td contenteditable="true"></td></tr>
                 </tbody>
             </table>
-
         </div>
-
-
         <div class="col-md-6 mb-3">
-
             <div id="outputText" contenteditable="true"></div>
-
         </div>
-
     </div>
-
-
-
-    <button class="btn btn-success mb-3" onclick="saveReport()" id="saveBtn">
-
-        Save Report
-
-    </button>
-
-
-
-    <button class="btn btn-warning mb-3"
-
-        onclick="updateReport()"
-
-        id="updateBtn"
-
-        style="display:none;">
-
-        Update Report
-
-    </button>
-
-
+    <button class="btn btn-success mb-3" onclick="saveReport()" id="saveBtn">Save Report</button>
+    <button class="btn btn-warning mb-3" onclick="updateReport()" id="updateBtn" style="display:none;">Update Report</button>
 </div>
-
-
-
-
-
 
 <!-- REPORTS PAGE -->
 <div id="reportsPage" style="display:none;">
-
     <h4>Saved Reports</h4>
-
     <table class="table table-bordered">
-
         <thead>
-
             <tr>
-
                 <th>Date</th>
-
                 <th>Action</th>
-
             </tr>
-
         </thead>
-
         <tbody id="reportsTable"></tbody>
-
     </table>
-
 </div>
-
-
-
-
-
-
-<!-- REPORT FORMAT PAGE (NEW) -->
-<div id="reportsFormatPage" style="display:none;">
-
-<h4>Reports Format</h4>
-
-<p>Select a format:</p>
-
-<button class="btn btn-primary mb-2"
-onclick="window.location.href='reports-format.html'">
-
-Open Reports Format Page
-
-</button>
-
-</div>
-
-
-
-
-
 
 <!-- ANALYTICS PAGE -->
 <div id="analyticsPage" style="display:none;">
-
     <h4>Analytics</h4>
-
     <p>Analytics content goes here...</p>
-
 </div>
-
-
-
-
-
 
 <!-- SETTINGS PAGE -->
 <div id="settingsPage" style="display:none;">
-
     <h4>Settings</h4>
-
     <p>Settings content goes here...</p>
-
 </div>
-
-
-
-
 
 </div>
 </div>
-
-
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script type="module" src="app.js"></script>
-
-
-
-
-
-<!-- ✅ PAGE SWITCH SCRIPT -->
-<script>
-
-function hideAllPages(){
-
-document.getElementById("dashboardPage").style.display="none";
-document.getElementById("reportsPage").style.display="none";
-document.getElementById("analyticsPage").style.display="none";
-document.getElementById("settingsPage").style.display="none";
-document.getElementById("reportsFormatPage").style.display="none";
-
-}
-
-
-
-function showDashboard(){
-
-hideAllPages();
-
-document.getElementById("dashboardPage").style.display="block";
-
-}
-
-
-
-function showReports(){
-
-hideAllPages();
-
-document.getElementById("reportsPage").style.display="block";
-
-}
-
-
-
-function showAnalytics(){
-
-hideAllPages();
-
-document.getElementById("analyticsPage").style.display="block";
-
-}
-
-
-
-function showSettings(){
-
-hideAllPages();
-
-document.getElementById("settingsPage").style.display="block";
-
-}
-
-
-
-function showReportsFormat(){
-
-hideAllPages();
-
-document.getElementById("reportsFormatPage").style.display="block";
-
-}
-
-</script>
-
-
-
 </body>
 </html>
