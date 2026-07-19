@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Control Totals OCR Analyzer</title>
+
+<script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    margin:20px;
+    background:#f4f4f4;
+}
+
+h2{
+    margin-bottom:10px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+button{
+    padding:8px 14px;
+    margin:5px;
+    cursor:pointer;
+}
+
+textarea{
+    width:100%;
+    height:250px;
+    resize:vertical;
+    font-family:Consolas,monospace;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+
+th,td{
+    border:1px solid #ccc;
+    padding:8px;
+}
+
+th{
+    background:#eee;
+}
+
+td[contenteditable]{
+    background:#fffef0;
+}
+
+td:focus{
+    outline:2px solid #4caf50;
+}
+
+.action-btn{
+    padding:4px 10px;
+}
+
+#status{
+    font-weight:bold;
+    color:green;
+}
+
+</style>
+</head>
+<body>
+
+<h2>POS Control Totals OCR Analyzer</h2>
+
+<div class="card">
+
+<input type="file" id="imageInput" accept="image/*">
+
+<button onclick="runOCR()">Run OCR</button>
+
+<span id="status"></span>
+
+</div>
+
+<div class="card">
+
+<h3>OCR Raw Output</h3>
+
+<textarea id="ocrText"></textarea>
+
+<br>
+
+<button onclick="analyzeOCR()">Analyze Control Totals</button>
+
+</div>
+
+<div class="card">
+
+<h3>Parsed Control Totals</h3>
+
+<button onclick="addRow()">Add Row</button>
+<button onclick="saveData()">Save</button>
+<button onclick="loadData()">Load</button>
+<button onclick="exportExcel()">Export Excel</button>
+
+<table id="dataTable">
+
+<thead>
+<tr>
+<th>Description</th>
+<th>Qty</th>
+<th>Amount</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</div>
+
+<script>
+
+async function runOCR(){
+
+const file=document.getElementById('imageInput').files[0];
+
+if(!file){
+alert("Select image first");
+return;
+}
+
+document.getElementById("status").innerText="Reading image...";
+
+const result=await Tesseract.recognize(
+file,
+'eng'
+);
+
+document.getElementById("ocrText").value=result.data.text;
+
+document.getElementById("status").innerText="OCR Complete";
+}
+
+function analyzeOCR(){
+
+const text=document.getElementById("ocrText").value;
+
+const lines=text.split("\n");
+
+const tbody=document.querySelector("#dataTable tbody");
+
+tbody.innerHTML="";
+
+lines.forEach(line=>{
+
+line=line.trim();
+
+if(!line)return;
+
+let match=line.match(
+/^(.*?)\s+(\d+)\s+([\d,]+\.\d{2})$/
+);
+
+if(match){
+
+const desc=match[1].trim();
+const qty=match[2];
+const amount=match[3];
+
+insertRow(desc,qty,amount);
+}
+});
+}
+
+function insertRow(desc="",qty="",amount=""){
+
+const tbody=document.querySelector("#dataTable tbody");
+
+const row=tbody.insertRow();
+
+row.innerHTML=`
+<td contenteditable="true">${desc}</td>
+<td contenteditable="true">${qty}</td>
+<td contenteditable="true">${amount}</td>
+<td>
+<button class="action-btn" onclick="deleteRow(this)">Delete</button>
+</td>
+`;
+
+addKeyboardNavigation(row);
+}
+
+function addRow(){
+insertRow();
+}
+
+function deleteRow(btn){
+btn.closest("tr").remove();
+}
+
+function saveData(){
+
+const rows=[];
+
+document.querySelectorAll("#dataTable tbody tr").forEach(row=>{
+
+const cells=row.querySelectorAll("td");
+
+rows.push({
+desc:cells[0].innerText,
+qty:cells[1].innerText,
+amount:cells[2].innerText
+});
+
+});
+
+localStorage.setItem(
+"controlTotalsData",
+JSON.stringify(rows)
+);
+
+alert("Saved");
+}
+
+function loadData(){
+
+const data=localStorage.getItem(
+"controlTotalsData"
+);
+
+if(!data)return;
+
+const rows=JSON.parse(data);
+
+const tbody=document.querySelector("#dataTable tbody");
+
+tbody.innerHTML="";
+
+rows.forEach(r=>{
+insertRow(r.desc,r.qty,r.amount);
+});
+
+alert("Loaded");
+}
+
+function exportExcel(){
+
+const table=document.getElementById("dataTable");
+
+const wb=XLSX.utils.table_to_book(table,{
+sheet:"Control Totals"
+});
+
+XLSX.writeFile(
+wb,
+"Control_Totals.xlsx"
+);
+}
+
+document.addEventListener("keydown",function(e){
+
+if(
+!e.target.matches("[contenteditable]")
+)return;
+
+const cell=e.target;
+
+const row=cell.parentElement;
+
+const cellIndex=[...row.children].indexOf(cell);
+
+const rowIndex=[...row.parentElement.children].indexOf(row);
+
+const rows=row.parentElement.children;
+
+let target;
+
+switch(e.key){
+
+case "ArrowRight":
+target=row.children[cellIndex+1];
+break;
+
+case "ArrowLeft":
+target=row.children[cellIndex-1];
+break;
+
+case "ArrowDown":
+if(rows[rowIndex+1])
+target=rows[rowIndex+1].children[cellIndex];
+break;
+
+case "ArrowUp":
+if(rows[rowIndex-1])
+target=rows[rowIndex-1].children[cellIndex];
+break;
+}
+
+if(target && target.hasAttribute("contenteditable")){
+
+e.preventDefault();
+
+target.focus();
+
+document.getSelection().selectAllChildren(target);
+
+document.getSelection().collapseToEnd();
+}
+});
+
+function addKeyboardNavigation(row){
+
+row.querySelectorAll("[contenteditable]").forEach(cell=>{
+
+cell.addEventListener("paste",function(e){
+
+e.preventDefault();
+
+const text=
+(e.clipboardData||window.clipboardData)
+.getData("text");
+
+document.execCommand(
+"insertText",
+false,
+text
+);
+
+});
+
+});
+}
+
+</script>
+
+</body>
+</html>
